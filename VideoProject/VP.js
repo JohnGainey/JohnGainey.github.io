@@ -1,6 +1,6 @@
 var video;
 
-var vScale = 50;
+var vScale = 10;
 
 function setup() {
   createCanvas(640, 480);
