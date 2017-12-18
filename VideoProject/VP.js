@@ -35,6 +35,9 @@ var eyeBrowLeft;
 var eyeBrowRight;
 var canMove;
 
+//Current Level/Level to switch to
+var nextLevel = 0;
+
 
 function setup() {
   videoP5 = createCapture(VIDEO);
@@ -65,10 +68,22 @@ function setup() {
   colorMode(RGB, 255, 255, 255, 1);
 
 
-  //Creating BLOCKS
-  slider[1] = new createBlock(1, 420, 160, 2, 1, 0, 1);
-  slider[0] = new createBlock(0, 20, 0, 2, 2, 1, 0);
-  slider[2] = new createBlock(2, 420, 0, 2, 2, 1, 1);
+  //Alert with Game Name and Rules
+  alert("Welcome to My Slider Puzzle \nTo play this puzzle Lower your Eyebrows to move around. Raise your Eyebrows while over a block to move it and Lower them to release it.");
+
+  //Creating BFirst Level
+  slider[0] = new CreateBlock(0, 420, 160, 2, 1, 0, 1);
+  slider[1] = new CreateBlock(1, 320, 0, 3, 1, 1, 1);
+  slider[2] = new CreateBlock(2, 220, 0, 1, 2, 1, 0);
+  slider[3] = new CreateBlock(3, 20, 80, 2, 1, 1, 1);
+  slider[4] = new CreateBlock(4, 320, 80, 1, 3, 1, 0);
+  slider[5] = new CreateBlock(5, 0, 160, 1, 3, 1, 0);
+  slider[6] = new CreateBlock(6, 120, 240, 2, 1, 1, 1);
+  slider[7] = new CreateBlock(7, 120, 320, 1, 2, 1, 0);
+  slider[8] = new CreateBlock(8, 220, 320, 3, 1, 1, 1);
+  slider[9] = new CreateBlock(9, 220, 400, 2, 1, 1, 1);
+  slider[10] = new CreateBlock(10, 420, 400, 2, 1, 1, 1);
+  slider[11] = new CreateBlock(11, 520, 240, 1, 2, 1, 0);
 }
 
 function draw() {
@@ -79,10 +94,11 @@ function draw() {
   eyeBrowsRaised();
 
   //Displaying Points
-  fill(0, 255, 0);
-  for (var i = 0; i < points.length; i++) {
-    text(i, points[i].x, points[i].y);
-  }
+  // fill(0, 255, 0);
+  // for (var i = 0; i < points.length; i++) {
+  //   text(i, points[i].x, points[i].y);
+  // }
+
 
 
   //Displaying Everything
@@ -103,15 +119,21 @@ function draw() {
   }
 
   for (var i = 0; i < slider.length; i++) {
+    slider[i].advance();
     slider[i].moves();
     slider[i].collision();
     slider[i].boundary();
     slider[i].display();
 
   }
+
+  levels();
+
+  boundary();
+
 }
 
-
+//To check if Eyebrows are raised
 function eyeBrowsRaised() {
   if (points.length > 24) {
     if ( eyeBrowLeft > 26 || eyeBrowRight > 26) {
@@ -123,7 +145,31 @@ function eyeBrowsRaised() {
   }
 }
 
-function createBlock(id, x, y, w, h, type, direction) {
+function levels() {
+  if (nextLevel == 1) {
+    slider = [];
+    slider[0] = new CreateBlock(0, 420, 160, 2, 1, 0, 1);
+    slider[1] = new CreateBlock(1, 20, 0, 2, 1, 1, 1);
+  }
+}
+
+function boundary() {
+  //Displaying End Point and boundary
+  strokeWeight(5);
+  line(20,0,620,0);
+  line(20,480,620,480);
+  line(620,0,620,480);
+  line(20,0,20,160);
+  line(20,240,20,480);
+  line(20,160,0,160);
+  line(20,240,0,240);
+  fill(0);
+  rect(0,0,20,160);
+  rect(0,240,20,240);
+  rect(620,0,20,480);
+}
+
+function CreateBlock(id, x, y, w, h, type, direction) {
   this.id = id;
   this.x = x;
   this.y = y;
@@ -145,6 +191,7 @@ function createBlock(id, x, y, w, h, type, direction) {
     rect(this.x, this.y, this.w, this.h);
   }
 
+//To check if the Block is hitting the sides
   this.boundary = function() {
     if (this.x < 20) {
       this.x = 20;
@@ -161,6 +208,7 @@ function createBlock(id, x, y, w, h, type, direction) {
   }
 
 
+//To check if the Block is hitting any other blocks
   this.collision = function() {
     for (var i = this.id+1; i < slider.length; i++) {
       if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y && this.y+this.h > slider[i].y && this.direction == 0) {
@@ -195,18 +243,23 @@ function createBlock(id, x, y, w, h, type, direction) {
 
   }
 
+  this.advance = function() {
+    if (this.type == 0) {
+      if (this.x < 30) {
+        nextLevel += 1;
+      }
+    }
+  }
 
-
-
+//To move the block w/ your nose
   this.moves = function() {
-    //canMove == true
-    if (640-mouseX > this.x && 640-mouseX < (this.x + this.w) && mouseY > this.y && mouseY < (this.y+this.h) && mouseIsPressed) {
+    if (hitbox.avgX > this.x && hitbox.avgX < (this.x + this.w) && hitbox.avgY > this.y && hitbox.avgY < (this.y+this.h) && canMove == true) {
       if (this.direction == 1) {
         // this.x = hitbox.avgX-50;
-        this.x = 640-mouseX-50;
+        this.x = hitbox.avgX-(this.w/2);
       }
       else if (this.direction == 0) {
-        this.y = mouseY-40;
+        this.y = hitbox.avgY-(this.h/2);
         // this.y = hitbox.avgY-40;
       }
     }
