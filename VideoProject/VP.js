@@ -161,40 +161,34 @@ function createBlock(id, x, y, w, h, type, direction) {
   }
 
 
-//NEED TO FIX THIS FUNCTION. SOMETHING IS HAPPENING WITH THE IF STATEMETNS
-
   this.collision = function() {
-    for (var i = this.id; i < slider.length; i++) {
-
-      if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y && this.y+this.h > slider[i].y) {
+    for (var i = this.id+1; i < slider.length; i++) {
+      if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y && this.y+this.h > slider[i].y && this.direction == 0) {
         this.y = slider[i].y-this.h;
         console.log("true")
       }
-      if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y+slider[i].h && this.y+this.h > slider[i].y+slider[i].h) {
+      else if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y+slider[i].h && this.y+this.h > slider[i].y+slider[i].h && this.direction == 0) {
         this.y = slider[i].y+slider[i].h;
       }
       if (this.x < slider[i].x && this.x+this.w > slider[i].x && this.y+this.h > slider[i].y && this.y < slider[i].y+slider[i].h && this.direction == 1) {
         this.x = slider[i].x-this.w;
       }
-      if (this.x < slider[i].x+slider[i].w && this.x > slider[i].x && this.y+this.h > slider[i].y && this.y < slider[i].y+slider[i].h && this.direction == 1) {
-        this.x = 300;
-        console.log("true");
+      else if (this.x < slider[i].x+slider[i].w && this.x > slider[i].x && this.y+this.h > slider[i].y && this.y < slider[i].y+slider[i].h && this.direction == 1) {
+        this.x = slider[i].x+slider[i].w;
       }
-
     }
 
-    for (var i = this.id; i < 0; i--) {
-      if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y && this.y+this.h > slider[i].y) {
+    for (var i = 0; i < this.id; i++) {
+      if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y && this.y+this.h > slider[i].y && this.direction == 0) {
         this.y = slider[i].y-this.h;
-        console.log("true")
       }
-      if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y+slider[i].h && this.y+this.h > slider[i].y+slider[i].h) {
+      else if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y+slider[i].h && this.y+this.h > slider[i].y+slider[i].h && this.direction == 0) {
         this.y = slider[i].y+slider[i].h;
       }
       if (this.x < slider[i].x && this.x+this.w > slider[i].x && this.y+this.h > slider[i].y && this.y < slider[i].y+slider[i].h && this.direction == 1) {
         this.x = slider[i].x-this.w;
       }
-      if (this.x < slider[i].x+slider[i].w && this.x > slider[i].x && this.y+this.h > slider[i].y && this.y < slider[i].y+slider[i].h && this.direction == 1) {
+      else if (this.x < slider[i].x+slider[i].w && this.x > slider[i].x && this.y+this.h > slider[i].y && this.y < slider[i].y+slider[i].h && this.direction == 1) {
         this.x = slider[i].x+slider[i].w;
       }
     }
