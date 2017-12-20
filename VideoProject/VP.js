@@ -31,12 +31,16 @@ var hitbox = {
 
 var slider = [];
 
+var eyeBrowLeftAVG = 0;
+var eyeBrowRightAVG = 0;
+var counter = 0;
+
 var eyeBrowLeft;
 var eyeBrowRight;
 var canMove;
 
 //Current Level/Level to switch to
-var nextLevel = 0;
+var win = 0;
 
 
 function setup() {
@@ -49,27 +53,27 @@ function setup() {
   canvasP5.position(vidX, vidY);
 
   var tracker = new tracking.LandmarksTracker();
-  tracker.setInitialScale(4);
-  tracker.setStepSize(2);
-  tracker.setEdgesDensity(0.1);
+    tracker.setInitialScale(4);
+    tracker.setStepSize(2);
+    tracker.setEdgesDensity(0.1);
 
-  tracking.track('#video', tracker, { camera: true });
-  tracker.on('track', function(event) {
-    if(!event.data) return;
-    event.data.landmarks.forEach(function(landmarks) {
-      points = [];
-      for(var l in landmarks){
-        points.push({x: landmarks[l][0], y: landmarks[l][1]});
-      }
+    tracking.track('#video', tracker, { camera: true });
+    tracker.on('track', function(event) {
+      if(!event.data) return;
+      event.data.landmarks.forEach(function(landmarks) {
+        points = [];
+        for(var l in landmarks){
+          points.push({x: landmarks[l][0], y: landmarks[l][1]});
+        }
+      });
+
     });
-
-  });
 
   colorMode(RGB, 255, 255, 255, 1);
 
 
   //Alert with Game Name and Rules
-  alert("Welcome to My Slider Puzzle \nTo play this puzzle Lower your Eyebrows to move around. Raise your Eyebrows while over a block to move it and Lower them to release it.");
+  alert("Welcome to My Slider Puzzle \nTo play this puzzle Lower your Eyebrows to move around. Raise your Eyebrows while over a block to move it and Lower them to release it. Keep your face at the same distance from the screen while playing.");
 
   //Creating BFirst Level
   slider[0] = new CreateBlock(0, 420, 160, 2, 1, 0, 1);
@@ -93,63 +97,94 @@ function draw() {
 
   eyeBrowsRaised();
 
-  //Displaying Points
-  // fill(0, 255, 0);
-  // for (var i = 0; i < points.length; i++) {
-  //   text(i, points[i].x, points[i].y);
-  // }
 
-
-
-  //Displaying Everything
-  if (points.length > 24) {
-
-    eyeBrowRight = points[20].y - points[10].y;
-    eyeBrowLeft = points[25].y - points[13].y;
-
+  if (win == 0) {
     //Hitbox Coords
-    hitbox.left = points[16].x;
-    hitbox.right = points[18].x;
-    hitbox.bottom = points[15].y;
-    hitbox.top = points[17].y;
-    hitbox.avgX = (hitbox.left+hitbox.right)/2;
-    hitbox.avgY = (hitbox.bottom+hitbox.top)/2;
+    if (points.length > 24) {
 
-    hitbox.display();
+      if (counter <= 30) {
+        eyeBrowLeftAVG += points[25].y - points[13].y;
+        eyeBrowRightAVG += points[20].y - points[10].y;
+        counter += 1;
+      }
+      if (counter == 30) {
+        eyeBrowRightAVG = eyeBrowRightAVG/counter;
+        eyeBrowLeftAVG = eyeBrowLeftAVG/counter;
+        counter += 1;
+      }
+
+      eyeBrowRight = points[20].y - points[10].y;
+      eyeBrowLeft = points[25].y - points[13].y;
+
+      hitbox.left = points[16].x;
+      hitbox.right = points[18].x;
+      hitbox.bottom = points[15].y;
+      hitbox.top = points[17].y;
+      hitbox.avgX = (hitbox.left+hitbox.right)/2;
+      hitbox.avgY = (hitbox.bottom+hitbox.top)/2;
+      hitbox.display();
+    }
+
+
+    for (var i = 0; i < slider.length; i++) {
+      slider[i].win();
+      slider[i].moves();
+      slider[i].collision();
+      slider[i].boundary();
+      slider[i].display();
+
+    }
+
+    boundary();
   }
 
-  for (var i = 0; i < slider.length; i++) {
-    slider[i].advance();
-    slider[i].moves();
-    slider[i].collision();
-    slider[i].boundary();
-    slider[i].display();
-
+  if (win == 1) {
+    alert("You have won my puzzle");
+    win += 1;
   }
 
-  levels();
+  if (win == 2) {
+    if (points.length > 24) {
+      noStroke();
+      fill(255);
+      beginShape();
+      for (var i = 0; i < 9; i++) {
+        vertex(points[i].x, points[i].y);
+      }
+      for (var i = 14; i >= 9; i--) {
+        vertex(points[i].x, points[i].y);
+      }
+      endShape();
 
-  boundary();
-
+      fill(0);
+      beginShape();
+        for (var i = 27; i < 31; i++) {
+          vertex(points[i].x, points[i].y);
+        }
+      endShape();
+      beginShape();
+        for (var i = 19; i < 23; i++) {
+          vertex(points[i].x, points[i].y);
+        }
+      endShape();
+      beginShape();
+        for (var i = 23; i < 27; i++) {
+          vertex(points[i].x, points[i].y);
+        }
+      endShape();
+    }
+  }
 }
 
 //To check if Eyebrows are raised
 function eyeBrowsRaised() {
   if (points.length > 24) {
-    if ( eyeBrowLeft > 26 || eyeBrowRight > 26) {
+    if ( eyeBrowLeft > eyeBrowLeftAVG*1.1 || eyeBrowRight > eyeBrowRightAVG*1.1) {
       canMove = true;
     }
     else {
       canMove = false;
     }
-  }
-}
-
-function levels() {
-  if (nextLevel == 1) {
-    slider = [];
-    slider[0] = new CreateBlock(0, 420, 160, 2, 1, 0, 1);
-    slider[1] = new CreateBlock(1, 20, 0, 2, 1, 1, 1);
   }
 }
 
@@ -213,7 +248,6 @@ function CreateBlock(id, x, y, w, h, type, direction) {
     for (var i = this.id+1; i < slider.length; i++) {
       if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y && this.y+this.h > slider[i].y && this.direction == 0) {
         this.y = slider[i].y-this.h;
-        console.log("true")
       }
       else if (this.x < slider[i].x+slider[i].w && this.x+this.w > slider[i].x && this.y < slider[i].y+slider[i].h && this.y+this.h > slider[i].y+slider[i].h && this.direction == 0) {
         this.y = slider[i].y+slider[i].h;
@@ -243,10 +277,10 @@ function CreateBlock(id, x, y, w, h, type, direction) {
 
   }
 
-  this.advance = function() {
+  this.win = function() {
     if (this.type == 0) {
       if (this.x < 30) {
-        nextLevel += 1;
+        win += 1;
       }
     }
   }
